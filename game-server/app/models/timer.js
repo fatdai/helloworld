@@ -2,6 +2,7 @@
  * Created by dai on 15/7/2.
  */
 
+var game = require('./game');
 
 var exp = module.exports;
 
@@ -10,5 +11,5 @@ exp.run = function(){
 }
 
 function tick(){
-
+    game.playersUpdate();
 }

@@ -68,16 +68,17 @@ Handler.prototype.login = function (msg, session, next) {
         }
     });
 
+    session.on('closed',onUserLeave.bind(null,self.app));
+
     next(null,{
         playerId:playerId
     });
 
-  //  session.on('closed',onUserLeave.bind(null,self.app));
+
 };
 
-//var onUserLeave = function(app, session) {
-//    if(!session || !session.uid) {
-//        return;
-//    }
-//    app.rpc.chat.chatRemote.kick(session, session.uid, app.get('serverId'), session.get('rid'), null);
-//};
+var onUserLeave = function(app, session) {
+    if( !!session &&  session.uid){
+        app.rpc.game.gameRemote.playerLeave(session,{playerId:session.get('playerId')},null);
+    }
+};
