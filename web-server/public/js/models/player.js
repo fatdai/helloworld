@@ -21,5 +21,10 @@
         //context.restore();
     }
 
+    Player.prototype.setPos = function(pos){
+        this.x = pos.x;
+        this.y = pos.y;
+    }
+
     win.Player = Player;
 })();

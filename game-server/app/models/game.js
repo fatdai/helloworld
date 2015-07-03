@@ -4,6 +4,7 @@
 
 var pomelo = require('pomelo');
 var timer = require('./timer');
+var ActionManager = require('./action/actionManager');
 
 var exp = module.exports;
 exp.WINDOW_WIDTH = 640;
@@ -12,6 +13,7 @@ exp.WINDOW_HEIGHT = 480;
 
 var players = {};
 var channel = null;
+var actionManager = null;
 
 // 需要存储所有增加的 player
 var addedPlayers = [];
@@ -20,6 +22,7 @@ var addedPlayers = [];
 var reducedPlayerIds = [];
 
 exp.init = function(opts){
+    actionManager = new ActionManager();
     timer.run();
 };
 
@@ -73,4 +76,13 @@ exp.removePlayer = function(id){
     var playerId = players[id].id;
     delete  players[id];
     reducedPlayerIds.push(playerId);
+};
+
+exp.timer = function(){
+    return timer;
 }
+
+exp.actionManager = function(){
+    return actionManager;
+}
+

@@ -20,3 +20,14 @@ function Player(opts){
 }
 
 module.exports = Player;
+
+
+//*******************************************
+Player.prototype.getPos = function(){
+    return {x:this.x,y:this.y};
+};
+
+Player.prototype.setPos = function(x,y){
+    this.x = x;
+    this.y = y;
+};

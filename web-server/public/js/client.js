@@ -3,6 +3,7 @@
  */
 
 var canvas = null,
+    startTick = false,
     context = null;
 
 window.onload = function(){
@@ -101,6 +102,12 @@ function initMsgHandler(){
     // Handle move message
     pomelo.on('onMove',function(data){
         console.log("receive move action.....");
+
+        var playerId = data.playerId;
+        var player = window.game.getPlayer(playerId);
+        if(!!player){
+            player.setPos(data.endPos);
+        }
     });
 
     // Handle kick out messge, occours when the current player is kicked out
@@ -142,6 +149,16 @@ function appStart(data){
 
     var avgFrame = 0;
 
+    //  准备监听事件
+    startTick = true;
+    var mousePos = utils.captureMouse(canvas);
+    canvas.addEventListener('mousedown',function(){
+        //console.log("mouse position    x:"+mousePos.x + "; y : " + mousePos.y);
+        // move to mousePos
+        move(mousePos);
+    });
+
+
     var tick = function(){
         var next = Date.now();
 
@@ -157,7 +174,7 @@ function appStart(data){
             avgFrame = allCount * 1000/(next - startTime);
             tickCount = 0;
             time2 = next;
-            console.log("frameRate:"+avgFrame);
+           // console.log("frameRate:"+avgFrame);
         }
 
         time = next;
@@ -168,13 +185,16 @@ function appStart(data){
         context.clearRect(0,0,canvas.width,canvas.height);
 
         context.fillStyle = "#ff0000";
-       // context.fillRect(0,0,200,100);
 
         // 绘制 player
         var game = window.game;
         for(var i  in game.players){
             game.players[i].draw(context);
         }
+
+        // 绘制 fps
+        context.fillStyle = "#000000";
+        context.fillText("fps:"+avgFrame,0,canvas.height - 30);
     };
 
     tick();
@@ -190,6 +210,21 @@ function appStart(data){
 //
 //    })();
 //}
+
+function move(targetPos){
+    var route = 'game.gameHandler.move';
+    var msg = {
+        targetPos : targetPos
+    };
+    pomelo.request(route,msg, function(result){
+        if(result.code == consts.MESSAGE.RES){
+            console.log("move responsed>>  x:" + result.sPos.x + "; y : " + result.sPos.y);
+            window.game.getCurPlayer().setPos(result.sPos);
+        }else{
+            console.log("move action has problem!!");
+        }
+    });
+}
 
 function onKeyDown(event){
 
