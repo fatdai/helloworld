@@ -6,6 +6,8 @@ var game = require('../../../models/game');
 var consts = require('../../../models/consts');
 var Move = require('../../../models/action/move');
 
+var schedule = require('../../../../node_modules/pomelo/node_modules/pomelo-scheduler/lib/schedule');
+
 module.exports = function (app) {
     return new Handler(app);
 };
@@ -76,4 +78,41 @@ Handler.prototype.move = function(msg,session,next){
             endPos : endPos
         });
     }
+}
+
+
+Handler.prototype.mymove = function(msg,session,next){
+    var delayTime = msg.delayTime;
+    var endPos = msg.targetPos;
+    var speed = 200;
+
+    var playerId = session.get('playerId');
+    var player = game.getPlayer(playerId);
+    var startPos = player.getPos();
+    var dis = Math.sqrt((endPos.x-startPos.x)*(endPos.x-startPos.x)+(endPos.y-startPos.y)*(endPos.y-startPos.y));
+
+    var totalTime = (1000 * dis/speed - delayTime * 2);
+
+    var now = Date.now();
+
+    var triggle = {
+        start : now + totalTime
+    };
+
+    var simglejob = function(){
+        console.log("start execute simple job");
+
+        // 让客户端移动到 endPos
+        game.getChannel().pushMessage({
+            route : 'onMove',
+            playerId:playerId,
+            endPos : endPos
+        });
+    };
+
+    schedule.scheduleJob(triggle,simglejob);
+
+    next(null,{
+        code:consts.MESSAGE.RES
+    });
 }

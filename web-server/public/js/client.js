@@ -103,11 +103,11 @@ function initMsgHandler(){
     pomelo.on('onMove',function(data){
         console.log("receive move action.....");
 
-        var playerId = data.playerId;
-        var player = window.game.getPlayer(playerId);
-        if(!!player){
-            player.setPos(data.endPos);
-        }
+        console.log("playerId:"+data.playerId);
+        var player = window.game.getPlayer(data.playerId);
+        player.finished = false;
+        player.endPos = data.endPos;
+
     });
 
     // Handle kick out messge, occours when the current player is kicked out
@@ -133,6 +133,9 @@ function appStart(data){
 
     console.log("appStart.......");
 
+    // 开始准备同步时间
+    app.timeSync();
+
     for(var i  in data.players){
         var p = new window.Player(data.players[i]);
         window.game.addPlayer(p);
@@ -146,7 +149,7 @@ function appStart(data){
     var frameRate = 0;
     var startTime = time;
     var time2 = time;
-
+    app.lastTime = time;
     var avgFrame = 0;
 
     //  准备监听事件
@@ -155,7 +158,7 @@ function appStart(data){
     canvas.addEventListener('mousedown',function(){
         //console.log("mouse position    x:"+mousePos.x + "; y : " + mousePos.y);
         // move to mousePos
-        move(mousePos);
+        move({x:mousePos.x,y:mousePos.y});
     });
 
 
@@ -179,6 +182,7 @@ function appStart(data){
 
         time = next;
 
+
         //***************************************
         // render
         window.requestAnimationFrame(tick);
@@ -186,43 +190,58 @@ function appStart(data){
 
         context.fillStyle = "#ff0000";
 
+        // for test
+        // client update
+
         // 绘制 player
         var game = window.game;
         for(var i  in game.players){
+            game.players[i].update();
             game.players[i].draw(context);
         }
 
         // 绘制 fps
         context.fillStyle = "#000000";
         context.fillText("fps:"+avgFrame,0,canvas.height - 30);
+
+        app.lastTime = Date.now();
     };
 
     tick();
 }
 
-//function render(){
-//    (function drawFrame(){
-//        window.requestAnimationFrame(drawFrame);
-//        context.clearRect(0,0,canvas.width,canvas.height);
-//
-//        context.fillStyle = "#000000";
-//        context.fillRect(0,0,canvas.width,canvas.height);
-//
-//    })();
-//}
 
 function move(targetPos){
-    var route = 'game.gameHandler.move';
+
+    // 客户端正常的移动   speed = 200
+    var player = game.getCurPlayer();
+    player.endPos = targetPos;
+    player.finished = false;
+
+
+    //var route = 'game.gameHandler.move';
+    //var msg = {
+    //    targetPos : targetPos
+    //};
+    //console.log("m.x:"+targetPos.x+";m.y:"+targetPos.y);
+    //pomelo.request(route,msg, function(result){
+    //    if(result.code == consts.MESSAGE.RES){
+    //        //console.log("move responsed>>  x:" + result.sPos.x + "; y : " + result.sPos.y);
+    //        //window.game.getCurPlayer().setPos(result.sPos);
+    //    }else{
+    //        console.log("move action has problem!!");
+    //    }
+    //});
+
+    //*************************************
+    // 告诉服务端  我的目标位置
+    var route = 'game.gameHandler.mymove';
     var msg = {
-        targetPos : targetPos
+        targetPos:targetPos,
+        delayTime:app.delayTime
     };
-    pomelo.request(route,msg, function(result){
-        if(result.code == consts.MESSAGE.RES){
-            console.log("move responsed>>  x:" + result.sPos.x + "; y : " + result.sPos.y);
-            window.game.getCurPlayer().setPos(result.sPos);
-        }else{
-            console.log("move action has problem!!");
-        }
+    pomelo.request(route,msg,function(data){
+        if(data.code == consts.MESSAGE.RES){}
     });
 }
 
