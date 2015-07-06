@@ -95,22 +95,41 @@ Handler.prototype.mymove = function(msg,session,next){
 
     var now = Date.now();
 
-    var triggle = {
-        start : now + totalTime
-    };
+    //// 触发时间
+    //var triggle = {
+    //    start : now + totalTime
+    //};
+    //
+    //var simglejob = function(){
+    //    console.log("start execute simple job");
+    //
+    //    // 让客户端移动到 endPos
+    //    game.getChannel().pushMessage({
+    //        route : 'onMove',
+    //        playerId:playerId,
+    //        endPos : endPos
+    //    });
+    //};
+    //
+    //// 同时还需要广播到其他玩家,告诉其他玩家 playerId 此次的运动
+    //
+    //
+    //schedule.scheduleJob(triggle,simglejob);
 
-    var simglejob = function(){
-        console.log("start execute simple job");
+    var move = new Move({
+        player : player,
+        endPos : endPos
+    });
 
-        // 让客户端移动到 endPos
-        game.getChannel().pushMessage({
-            route : 'onMove',
-            playerId:playerId,
-            endPos : endPos
-        });
-    };
+    game.timer().addAction(move);
 
-    schedule.scheduleJob(triggle,simglejob);
+    // 广播出去
+    game.getChannel().pushMessage({
+        route : 'onMove',
+        playerId : playerId,
+        endPos : endPos,
+        delayTime : delayTime
+    });
 
     next(null,{
         code:consts.MESSAGE.RES

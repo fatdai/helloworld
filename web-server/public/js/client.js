@@ -103,11 +103,22 @@ function initMsgHandler(){
     pomelo.on('onMove',function(data){
         console.log("receive move action.....");
 
-        console.log("playerId:"+data.playerId);
         var player = window.game.getPlayer(data.playerId);
+        var delaytime = data.delayTime;
+        var endPos = data.endPos;
+
+        // 方式1: 相当于同步的方式
         player.finished = false;
         player.endPos = data.endPos;
 
+        //if(player != game.getCurPlayer()){
+        //    // 其他玩家
+        //
+        //}else{
+        //    // 自己
+        //    player.finished = false;
+        //    player.endPos = data.endPos;
+        //}
     });
 
     // Handle kick out messge, occours when the current player is kicked out
@@ -202,7 +213,9 @@ function appStart(data){
 
         // 绘制 fps
         context.fillStyle = "#000000";
-        context.fillText("fps:"+avgFrame,0,canvas.height - 30);
+        context.fillText("fps:"+avgFrame,0,canvas.height - 50);
+
+        context.fillText("delay:"+app.delayTime,0,canvas.height - 25);
 
         app.lastTime = Date.now();
     };
